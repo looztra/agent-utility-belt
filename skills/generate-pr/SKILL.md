@@ -20,20 +20,12 @@ Create a PR when none exists for the current branch, or update the existing PR t
 
 1. Inspect repository state:
   - Verify `gh --version` and `gh auth status` (see PR Creation And Update Rules for the MCP fallback if `gh` is unavailable or unauthenticated).
-  - Run `git status` to see uncommitted changes.
 2. Determine the current branch (`git branch --show-current`) and the default branch (`git remote show origin | grep "HEAD branch"`).
 3. If current branch equals default branch, stop and tell the user a feature branch is required before creating a PR.
-4. Review local changes using git status/diff, and `git log origin/<default-branch>..HEAD --oneline` plus `git diff origin/<default-branch>..HEAD --stat` to understand the full scope of the PR.
-5. If there are uncommitted changes, apply commit rules:
-  - Commit only files that are explicitly staged or clearly related to the feature/fix being PR'd.
-  - Never commit unrelated work-in-progress, ignored files, secrets, or ambiguous files.
-  - If inclusion is ambiguous, ask the user which files to include.
-  - Create one commit per logical change.
-  - Each commit must still follow conventional commit type + mandatory scope (for example `feat(scope): ...`, `fix(scope): ...`).
-6. Push the current branch to origin (`git push -u origin HEAD` if no upstream is set yet).
-7. Check whether a PR already exists for the current branch (`gh pr view`).
-8. If no PR exists, create one.
-9. If a PR exists, update title and description only when needed.
+4. Invoke the `commit-and-push` skill to bring the branch up to date on the remote. It handles: the protected-branch check, reviewing the full diff scope against the default branch, safe commit selection (only staged/clearly-related files, never unrelated work-in-progress, ignored files, secrets, or ambiguous files — asking the user when ambiguous), one commit per logical change with conventional type + mandatory scope, and pushing with upstream fallback.
+5. Check whether a PR already exists for the current branch (`gh pr view`).
+6. If no PR exists, create one.
+7. If a PR exists, update title and description only when needed.
 
 ## Gathering Missing Information
 
@@ -74,7 +66,6 @@ Check first whether the following can be inferred from commit messages, branch n
 ## Error Handling
 
 - **No commits ahead of the default branch**: tell the user there's nothing to submit and ask if they meant a different branch.
-- **Branch not pushed yet**: push it first (`git push -u origin HEAD`), then continue.
 - **PR already exists**: show it (`gh pr view`) and proceed to update it instead of creating a new one.
 - **Merge conflicts with the base branch**: report the conflict and let the user decide how to resolve it; do not resolve or rebase automatically.
 
