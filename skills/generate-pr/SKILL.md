@@ -18,8 +18,7 @@ Create a PR when none exists for the current branch, or update the existing PR t
 
 ## Procedure
 
-1. Inspect repository state:
-  - Verify `gh --version` and `gh auth status` (see PR Creation And Update Rules for the MCP fallback if `gh` is unavailable or unauthenticated).
+1. Inspect repository state: verify `gh --version` and `gh auth status` (see PR Creation And Update Rules for the MCP fallback if `gh` is unavailable or unauthenticated).
 2. Determine the current branch (`git branch --show-current`) and the default branch (`git remote show origin | grep "HEAD branch"`).
 3. If current branch equals default branch, stop and tell the user a feature branch is required before creating a PR.
 4. Invoke the `commit-and-push` skill to bring the branch up to date on the remote. It handles: the protected-branch check, reviewing the full diff scope against the default branch, safe commit selection (only staged/clearly-related files, never unrelated work-in-progress, ignored files, secrets, or ambiguous files — asking the user when ambiguous), one commit per logical change with conventional type + mandatory scope, and pushing with upstream fallback.
