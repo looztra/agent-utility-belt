@@ -1,0 +1,34 @@
+---
+name: Manage releases
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+# Serialize runs: the tag created on a release-PR merge must exist before
+# release-please evaluates "commits since last release" on a later push.
+concurrency:
+  group: manage-releases
+  cancel-in-progress: false
+
+jobs:
+  release-please:
+    name: Release Please
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      # The PAT (not GITHUB_TOKEN) is required so that CI checks run on the
+      # release PRs opened by this workflow.
+      - id: release-please
+        uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

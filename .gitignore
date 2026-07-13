@@ -1,0 +1,12 @@
+# mise local overrides
+.mise.local.toml
+mise.local.toml
+
+# Editor cruft
+*.swp
+*~
+.idea/
+.vscode/
+
+# OS cruft
+.DS_Store
