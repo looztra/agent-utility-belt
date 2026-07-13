@@ -2,3 +2,4 @@
 globs:
   - '**/*.md'
   - '!CHANGELOG.md'
+  - '!skills/**/*.md'
