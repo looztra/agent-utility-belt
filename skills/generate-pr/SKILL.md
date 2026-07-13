@@ -18,20 +18,28 @@ Create a PR when none exists for the current branch, or update the existing PR t
 
 ## Procedure
 
-1. Inspect repository state.
-2. Determine the current branch and default branch.
+1. Inspect repository state:
+  - Verify `gh --version` and `gh auth status` (see PR Creation And Update Rules for the MCP fallback if `gh` is unavailable or unauthenticated).
+  - Run `git status` to see uncommitted changes.
+2. Determine the current branch (`git branch --show-current`) and the default branch (`git remote show origin | grep "HEAD branch"`).
 3. If current branch equals default branch, stop and tell the user a feature branch is required before creating a PR.
-4. Review local changes using git status/diff.
+4. Review local changes using git status/diff, and `git log origin/<default-branch>..HEAD --oneline` plus `git diff origin/<default-branch>..HEAD --stat` to understand the full scope of the PR.
 5. If there are uncommitted changes, apply commit rules:
   - Commit only files that are explicitly staged or clearly related to the feature/fix being PR'd.
   - Never commit unrelated work-in-progress, ignored files, secrets, or ambiguous files.
   - If inclusion is ambiguous, ask the user which files to include.
   - Create one commit per logical change.
   - Each commit must still follow conventional commit type + mandatory scope (for example `feat(scope): ...`, `fix(scope): ...`).
-6. Push the current branch to origin.
-7. Check whether a PR already exists for the current branch.
+6. Push the current branch to origin (`git push -u origin HEAD` if no upstream is set yet).
+7. Check whether a PR already exists for the current branch (`gh pr view`).
 8. If no PR exists, create one.
 9. If a PR exists, update title and description only when needed.
+
+## Gathering Missing Information
+
+Check first whether the following can be inferred from commit messages, branch name (e.g. `fix/issue-123`), or changed files: related issue number, problem/motivation, type of change, and test procedure. Only ask the user when it's genuinely missing — for example:
+
+> I couldn't find a related issue number in the commit messages or branch name. What GitHub issue does this PR address? (Enter the issue number, or "N/A" for small fixes)
 
 ## PR Creation And Update Rules
 
@@ -42,6 +50,8 @@ Create a PR when none exists for the current branch, or update the existing PR t
 5. For ambiguous base branch selection, ask the user before creating the PR.
 6. PR title must follow semantic commit style with mandatory scope and describe the main change in the full PR, not just the last commit.
 7. Update existing PR title/description when they do not reflect all branch commits, miss required template sections, or violate title convention.
+8. Write the PR body to a temporary file first (e.g. `gh pr create --title "..." --body-file /tmp/pr-body.md --base <default-branch>`) rather than passing it inline via `--body` — this avoids shell-escaping issues with markdown, newlines, and checkboxes. Delete the temp file once the PR is created/updated.
+9. If the user asks for a draft PR, add `--draft` to the `gh pr create` invocation.
 
 ## PR Description Rules
 
@@ -59,6 +69,22 @@ Create a PR when none exists for the current branch, or update the existing PR t
 - Never mark checkboxes for tasks not performed or verified by the current agent run.
 - When updating an existing PR authored by others, preserve unchecked/checked state unless there is direct evidence the task was completed.
 - Ensure the final PR text is consistent with branch contents and commit history.
+- Never rebase, squash, or force-push without the user's explicit confirmation for that specific action — offer it as a suggestion when history looks messy, but do not perform it unilaterally.
+
+## Error Handling
+
+- **No commits ahead of the default branch**: tell the user there's nothing to submit and ask if they meant a different branch.
+- **Branch not pushed yet**: push it first (`git push -u origin HEAD`), then continue.
+- **PR already exists**: show it (`gh pr view`) and proceed to update it instead of creating a new one.
+- **Merge conflicts with the base branch**: report the conflict and let the user decide how to resolve it; do not resolve or rebase automatically.
+
+## Post-Creation
+
+After creating or updating the PR:
+
+1. Display the PR URL.
+2. Mention that CI checks will run automatically.
+3. Offer optional follow-ups the user can request: adding reviewers (`gh pr edit --add-reviewer`) or labels (`gh pr edit --add-label`).
 
 ## Important Context
 
