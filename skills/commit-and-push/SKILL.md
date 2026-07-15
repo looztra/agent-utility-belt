@@ -1,6 +1,9 @@
 ---
 name: commit-and-push
 description: Safely review git changes, create one or more semantic commits with mandatory scopes, and push the current branch. Use when the user asks to commit changes, push a branch, prepare commits for a PR, or perform a commit-and-push workflow with git.
+license: Apache-2.0
+metadata:
+  last-updated: 2026-07-13
 ---
 
 # Commit And Push
