@@ -2,6 +2,9 @@
 name: generate-pr
 description: Create or update a GitHub pull request from the current branch with semantic commit conventions, safe commit selection, template-compliant PR descriptions, and tool fallback (GitHub CLI then GitHub MCP server).
 argument-hint: Branch or change summary to use for the PR
+license: Apache-2.0
+metadata:
+  last-updated: 2026-07-13
 ---
 
 # Generate Or Update Pull Request
