@@ -4,7 +4,7 @@ description: Create or update a GitHub pull request from the current branch with
 argument-hint: Branch or change summary to use for the PR
 license: Apache-2.0
 metadata:
-  last-updated: 2026-07-13
+  last-updated: 2026-07-22
 ---
 
 # Generate Or Update Pull Request
@@ -26,8 +26,13 @@ Create a PR when none exists for the current branch, or update the existing PR t
 3. If current branch equals default branch, stop and tell the user a feature branch is required before creating a PR.
 4. Invoke the `commit-and-push` skill to bring the branch up to date on the remote. It handles: the protected-branch check, reviewing the full diff scope against the default branch, safe commit selection (only staged/clearly-related files, never unrelated work-in-progress, ignored files, secrets, or ambiguous files — asking the user when ambiguous), one commit per logical change with conventional type + mandatory scope, and pushing with upstream fallback.
 5. Check whether a PR already exists for the current branch (`gh pr view`).
-6. If no PR exists, create one.
-7. If a PR exists, update title and description only when needed.
+6. Resolve the PR base branch carefully before creating/updating:
+   - If a PR already exists, use its current base branch unless the user explicitly asks to change it.
+   - If no PR exists, derive a base-branch candidate from branch context (for example branch upstream/merge target, release branch naming, or recent repo conventions) instead of defaulting directly to `main`.
+   - Use the repository default branch only as a last-resort fallback when no better signal exists.
+7. If the correct base branch is not obvious with high confidence, explicitly ask the user to validate the base branch before creating the PR.
+8. If no PR exists, create one with the validated base branch.
+9. If a PR exists, update title and description only when needed.
 
 ## Gathering Missing Information
 
@@ -40,12 +45,19 @@ Check first whether the following can be inferred from commit messages, branch n
 1. Prefer GitHub CLI when available/authenticated.
 2. If GitHub CLI is unavailable, use GitHub MCP tools.
 3. If neither GitHub CLI nor GitHub MCP tools is available/authenticated, stop and instruct the user to run `gh auth login` (and install `gh` if missing) before retrying.
-4. Target the repository default branch unless branch naming or existing PR metadata clearly indicates a different long-lived target (for example `release/*`).
-5. For ambiguous base branch selection, ask the user before creating the PR.
-6. PR title must follow semantic commit style with mandatory scope and describe the main change in the full PR, not just the last commit.
-7. Update existing PR title/description when they do not reflect all branch commits, miss required template sections, or violate title convention.
-8. Write the PR body to a temporary file first (e.g. `gh pr create --title "..." --body-file /tmp/pr-body.md --base <default-branch>`) rather than passing it inline via `--body` — this avoids shell-escaping issues with markdown, newlines, and checkboxes. Delete the temp file once the PR is created/updated.
-9. If the user asks for a draft PR, add `--draft` to the `gh pr create` invocation.
+4. Never assume the repository default branch is the right PR base branch.
+5. For new PR creation, determine base branch using this priority order:
+   - Explicit user instruction
+   - Existing PR metadata for the same head branch (if any)
+   - Branch upstream/merge target metadata
+   - Clear branch/release conventions in the repository
+   - Repository default branch (last resort only)
+6. If base branch inference is ambiguous, stop and explicitly ask the user to validate the base branch before creating the PR (for example: "I inferred `<candidate-base>` as the PR base. Can you confirm?").
+7. PR title must follow semantic commit style with mandatory scope and describe the main change in the full PR, not just the last commit.
+8. Update existing PR title/description when they do not reflect all branch commits, miss required template sections, or violate title convention.
+9. Always pass the resolved base branch explicitly in PR creation commands (`gh pr create --base <resolved-base>` and MCP create-PR `base` field) instead of relying on tool defaults.
+10. Write the PR body to a temporary file first (e.g. `gh pr create --title "..." --body-file /tmp/pr-body.md --base <resolved-base>`) rather than passing it inline via `--body` — this avoids shell-escaping issues with markdown, newlines, and checkboxes. Delete the temp file once the PR is created/updated.
+11. If the user asks for a draft PR, add `--draft` to the `gh pr create` invocation.
 
 ## PR Description Rules
 
