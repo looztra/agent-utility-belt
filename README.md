@@ -8,6 +8,7 @@ My agents' go-to belt.
 | --- | --- |
 | [commit-and-push](skills/commit-and-push/SKILL.md) | Safely review git changes, create one or more semantic commits with mandatory scopes, and push the current branch. |
 | [generate-pr](skills/generate-pr/SKILL.md) | Create or update a GitHub pull request from the current branch, with template-compliant descriptions and a GitHub CLI → GitHub MCP fallback. |
+| [pr-merge-loop](skills/pr-merge-loop/SKILL.md) | Work through every open PR oldest first, rebasing and auto-merging the approved ones, then report a summary table of what merged and why the rest did not. |
 
 ## Installing the skills
 
@@ -20,7 +21,7 @@ Install with [vercel-labs/skills](https://github.com/vercel-labs/skills), which 
 npx skills add looztra/agent-utility-belt --list
 
 # install specific skills
-npx skills add looztra/agent-utility-belt --skill commit-and-push --skill generate-pr
+npx skills add looztra/agent-utility-belt --skill commit-and-push --skill generate-pr --skill pr-merge-loop
 
 # or install every skill in the repo
 npx skills add looztra/agent-utility-belt --all
@@ -39,6 +40,7 @@ gh --version
 # install a specific skill for Claude Code
 gh skill install looztra/agent-utility-belt commit-and-push --agent claude-code
 gh skill install looztra/agent-utility-belt generate-pr --agent claude-code
+gh skill install looztra/agent-utility-belt pr-merge-loop --agent claude-code
 
 # or install every skill in the repo
 gh skill install looztra/agent-utility-belt --all --agent claude-code
