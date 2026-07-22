@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/looztra/agent-utility-belt/compare/v0.2.0...v0.3.0) (2026-07-22)
+
+
+### Features
+
+* **skills:** add pr-merge-loop skill ([#19](https://github.com/looztra/agent-utility-belt/issues/19)) ([a0e2fbd](https://github.com/looztra/agent-utility-belt/commit/a0e2fbd469b41ec22d8474df750de31890d81058))
+
 ## [0.2.0](https://github.com/looztra/agent-utility-belt/compare/v0.1.0...v0.2.0) (2026-07-22)
 
 
