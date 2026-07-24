@@ -22,6 +22,23 @@ Read the project's agent instructions (`CLAUDE.md`, `AGENTS.md`, and any documen
 engineering principles they reference). These govern reviewer judgments: findings should be
 anchored in the project's own conventions and the lens principles below, not personal taste.
 
+### Spec-driven development (SDD) frameworks
+
+Check whether the repo under review uses an SDD framework — if it does, its spec artifacts
+are the authoritative statement of intent and acceptance criteria and MUST be loaded:
+
+| Framework | Detection markers | Artifacts to load |
+| --------- | ----------------- | ----------------- |
+| BMAD Method | `.bmad-core/`, `_bmad/`, or `bmad/` directory | The active story under `docs/stories/`, plus the `docs/prd.md` and `docs/architecture.md` sections it references |
+| OpenSpec | `openspec/` directory containing `project.md` | `openspec/project.md` and the active change under `openspec/changes/<id>/` (`proposal.md`, `tasks.md`, `design.md`, spec deltas) |
+| Spec Kit | `.specify/` directory | `.specify/memory/constitution.md` and the active feature under `specs/<NNN-name>/` (`spec.md`, `plan.md`, `tasks.md`) |
+
+Identify the *active* artifact (story / change / feature) from the branch name, recent
+commits, or the files touched by the diff; if several are plausible, ask the user rather
+than guessing. If markers are present but no active artifact can be tied to the work under
+review, say so in the verdict — reviewing spec-managed work without its spec is itself
+worth flagging.
+
 ## Step 2 — Determine Scope and Intent
 
 Identify what to review from context (recent diffs, referenced plans, the user's message).
@@ -30,6 +47,12 @@ If nothing is identifiable, ask the user instead of guessing.
 Determine the **intent** — what the author is trying to achieve. This is critical: reviewers
 challenge whether the work *achieves the intent well*, not whether the intent is correct.
 State the intent explicitly before proceeding.
+
+If an SDD framework was detected in Step 1, derive the intent from the active spec artifact
+(story, change proposal, or feature spec) rather than reconstructing it from the diff, and
+treat its acceptance criteria / requirements as part of the intent. Divergence between the
+implementation and its spec — unmet criteria, silent scope creep, behavior the spec never
+asked for — is a finding, not a stylistic remark.
 
 Assess change size:
 
@@ -46,7 +69,8 @@ reviewer gets a single self-contained prompt containing:
 
 1. The stated intent (from Step 2)
 2. Their assigned lens — the full lens text from the Reviewer Lenses section below
-3. The relevant project conventions from Step 1 (contents, not summaries)
+3. The relevant project conventions from Step 1 (contents, not summaries), including the
+   active SDD spec artifacts when a framework was detected
 4. The code or diff to review (or precise instructions to read it)
 5. These instructions, verbatim: "You are an adversarial reviewer. Your job is to find real
    problems, not validate the work. Be specific — cite files, lines, and concrete failure
