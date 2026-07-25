@@ -22,9 +22,21 @@ it through as the reviewers' model. Do not detect, infer, or enforce any particu
 
 ## Step 1 — Load Grounding
 
-Read the project's agent instructions (`CLAUDE.md`, `AGENTS.md`, and any documented
-engineering principles they reference). These govern reviewer judgments: findings should be
+Read the project's agent instructions. These govern reviewer judgments: findings should be
 anchored in the project's own conventions and the lens principles below, not personal taste.
+Load whichever of these exist — they coexist rather than supersede one another, and a repo
+written against Copilot may carry no `CLAUDE.md` at all:
+
+| Source | Notes |
+| ------ | ----- |
+| `CLAUDE.md` | Repo root, plus any nested `CLAUDE.md` in directories the diff touches |
+| `AGENTS.md` | Same nesting convention; read by several agent tools, Copilot among them |
+| `.github/copilot-instructions.md` | Repo-wide Copilot instructions, applying to every file |
+| `.github/instructions/*.instructions.md` | Path-scoped Copilot instructions. Each carries an `applyTo` frontmatter glob — load only those whose glob matches files in the diff, and pass each reviewer the ones matching the files it is judging |
+
+Follow `@`-style imports and any documented engineering principles these files reference. Where
+two sources genuinely conflict, say so in the verdict instead of silently picking one — a
+contradiction between a repo's own instruction files is worth surfacing.
 
 ### Spec-driven development (SDD) frameworks
 
@@ -55,8 +67,8 @@ changes what reviewers can be held to, because there is no authoritative stateme
 check the implementation against. Two adjustments:
 
 - Weight the project's own conventions more heavily, since they are the only written standard
-  available: `CLAUDE.md` / `AGENTS.md`, and the existing patterns in the code surrounding the
-  change.
+  available: every agent instruction source loaded in Step 1, plus the existing patterns in the
+  code surrounding the change.
 - The intent is a *reconstruction* (see Step 2). Tell reviewers so explicitly. A finding that
   rests on inferred intent is weaker than one resting on a written requirement, and reviewers
   that treat their own reconstruction as authoritative produce confident nonsense.
