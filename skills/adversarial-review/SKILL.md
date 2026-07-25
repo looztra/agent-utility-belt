@@ -17,8 +17,10 @@ The work under review may be the current session's own, or a pull request opened
 else. Both are in scope.
 
 Model choice is the user's responsibility: run the reviewers on whatever model the current
-session uses, unless the user explicitly names a model for the reviewers — in that case pass
-it through as the reviewers' model. Do not detect, infer, or enforce any particular model.
+session uses, unless the user explicitly names a model for the reviewers. If the agent runtime
+supports per-reviewer model selection, pass through the requested model; otherwise state that
+model selection is not controllable in the current environment. Do not detect, infer, or enforce
+any particular model.
 
 ## Step 1 — Load Grounding
 
@@ -82,7 +84,7 @@ If nothing is identifiable, ask the user instead of guessing.
 | ------ | ---------------- |
 | Uncommitted work | `git diff` and `git diff --staged` |
 | A branch | `git diff <base>...HEAD` — three-dot, against the merge base, so commits landed on the base branch since do not appear as part of the change |
-| A pull request | `gh pr view <n>` for description, author, and linked issue; `gh pr diff <n>` for the change |
+| A pull request | `gh pr view <n> --json author,body,comments,commits,reviews,title,url` for metadata and top-level discussion; `gh api repos/:owner/:repo/pulls/<n>/comments` for inline review comments; `gh pr diff <n>` for the change |
 
 ### Reviewing someone else's pull request
 
@@ -93,10 +95,14 @@ session's own work, nor to work that has yet to be submitted. When the author is
   from what you would have built. Reconstructing a different intent and then reviewing against it
   is the dominant failure mode here, and it produces findings the author will rightly dismiss.
 - Read the existing review comments before spawning reviewers, and drop findings already raised.
-  Restating another reviewer's point as a fresh discovery is noise.
+  Restating another reviewer's point as a fresh discovery is noise. Pass a concise "known prior
+  findings" block to each reviewer so they do not spend their pass rediscovering already-raised
+  issues.
 - The branch may not be checked out. `gh pr diff` covers the diff, but reviewers needing
-  surrounding context must read files at the PR's head — `gh pr checkout <n>` when the user
-  allows it, otherwise state plainly in the verdict which context could not be inspected.
+  surrounding context must read files from the PR head without disturbing the current worktree
+  when possible: fetch the PR head ref and inspect files with `git show <ref>:<path>`, or use a
+  temporary worktree with explicit user consent. If neither is possible, state plainly in the
+  verdict which context could not be inspected.
 
 ### Intent
 
@@ -132,8 +138,10 @@ reviewer gets a single self-contained prompt containing:
 2. Their assigned lens — the full lens text from the Reviewer Lenses section below
 3. The relevant project conventions from Step 1 (contents, not summaries), including the
    active SDD spec artifacts when a framework was detected
-4. The code or diff to review (or precise instructions to read it)
-5. These instructions, verbatim: "You are an adversarial reviewer. Your job is to find real
+4. Known prior findings from existing PR comments, when reviewing a PR, so reviewers avoid
+   duplicate reports
+5. The code or diff to review (or precise instructions to read it)
+6. These instructions, verbatim: "You are an adversarial reviewer. Your job is to find real
    problems, not validate the work. Be specific — cite files, lines, and concrete failure
    scenarios. Rate each finding: high (blocks ship), medium (should fix), low (worth noting).
    Return your findings as a numbered markdown list."
@@ -144,17 +152,20 @@ skip a lens.
 ## Step 4 — Synthesize Verdict
 
 Read each reviewer's findings. Deduplicate overlapping findings, keeping the highest severity
-and crediting every lens that raised it. Produce a single verdict in the Verdict Format below.
+and crediting every lens that raised it. Do not treat lack of overlap as evidence that a finding
+is weak: each reviewer used a different lens, so a valid issue may appear in only one review.
 
 ## Step 5 — Render Judgment
 
-After synthesizing the reviewers, apply your own judgment. Using the stated intent and the
-project conventions as your frame, state which findings you would accept and which you would
-reject — and why. Reviewers are adversarial by design; not every finding warrants action.
-Call out false positives, overreach, and findings that mistake style for substance.
+After synthesizing the reviewers, apply your own judgment before assigning the verdict. Using the
+stated intent and the project conventions as your frame, state which findings you would accept,
+reject, or mark uncertain — and why. Reviewers are adversarial by design; not every finding
+warrants action. Call out false positives, overreach, and findings that mistake style for
+substance.
 
-Append the Lead Judgment section to the verdict. Then stop — applying fixes is a separate
-task the user must ask for.
+Assign the final verdict from the accepted and uncertain findings only, then append the Lead
+Judgment section. Rejected findings do not affect the verdict. Then stop — applying fixes is a
+separate task the user must ask for.
 
 ## Reviewer Lenses
 
@@ -211,11 +222,13 @@ For each finding:
 <1-3 things the reviewers found no issue with — acknowledge good work>
 
 ## Lead Judgment
-<for each finding: accept or reject with a one-line rationale>
+<for each finding: accept, reject, or uncertain with a one-line rationale>
 ```
 
 Verdict logic:
 
-- **PASS** — no high-severity findings
-- **CONTESTED** — high-severity findings but reviewers disagree on them
-- **REJECT** — high-severity findings with reviewer consensus
+- **PASS** — no accepted medium- or high-severity findings, and no uncertain high-severity
+  findings
+- **CONTESTED** — at least one uncertain high-severity finding, or accepted medium-severity
+  findings without accepted high-severity findings
+- **REJECT** — at least one accepted high-severity finding

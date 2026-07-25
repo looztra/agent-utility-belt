@@ -6,6 +6,7 @@ My agents' go-to belt.
 
 | Skill | Description |
 | --- | --- |
+| [adversarial-review](skills/adversarial-review/SKILL.md) | Run an adversarial, read-only review of a diff, branch, or PR using independent reviewer lenses and a synthesized verdict. |
 | [commit-and-push](skills/commit-and-push/SKILL.md) | Safely review git changes, create one or more semantic commits with mandatory scopes, and push the current branch. |
 | [generate-pr](skills/generate-pr/SKILL.md) | Create or update a GitHub pull request from the current branch, with template-compliant descriptions and a GitHub CLI → GitHub MCP fallback. |
 | [pr-merge-loop](skills/pr-merge-loop/SKILL.md) | Work through every open PR oldest first, rebasing and auto-merging the approved ones, then report a summary table of what merged and why the rest did not. |
@@ -20,14 +21,17 @@ Install with [vercel-labs/skills](https://github.com/vercel-labs/skills), which 
 # list what's available in this repo
 npx skills add looztra/agent-utility-belt --list
 
-# install specific skills
-npx skills add looztra/agent-utility-belt --skill commit-and-push --skill generate-pr --skill pr-merge-loop
+# install one skill
+npx skills add looztra/agent-utility-belt --skill adversarial-review
+npx skills add looztra/agent-utility-belt --skill commit-and-push
+npx skills add looztra/agent-utility-belt --skill generate-pr
+npx skills add looztra/agent-utility-belt --skill pr-merge-loop
 
-# or install every skill in the repo
-npx skills add looztra/agent-utility-belt --all
+# install every skill in the repo for the selected or auto-detected agent
+npx skills add looztra/agent-utility-belt --skill '*'
 ```
 
-Add `-g` to install at the user level (`~/.claude/skills/`) instead of the current project, or `-a <agent>` to target an agent other than the auto-detected one.
+Add `-g` to install at the user level (`~/.claude/skills/`) instead of the current project, or `-a <agent>` to target an agent other than the auto-detected one. Do not use `--all` unless you want every skill installed to every supported agent; upstream defines it as shorthand for all skills plus all agents without prompts.
 
 ### Using the GitHub CLI (`gh`)
 
@@ -37,7 +41,8 @@ GitHub CLI v2.90.0+ ships a native [`gh skill`](https://cli.github.com/manual/gh
 # check your gh version supports it (needs v2.90.0+)
 gh --version
 
-# install a specific skill for Claude Code
+# install one skill for Claude Code
+gh skill install looztra/agent-utility-belt adversarial-review --agent claude-code
 gh skill install looztra/agent-utility-belt commit-and-push --agent claude-code
 gh skill install looztra/agent-utility-belt generate-pr --agent claude-code
 gh skill install looztra/agent-utility-belt pr-merge-loop --agent claude-code
