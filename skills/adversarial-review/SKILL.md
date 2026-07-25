@@ -47,7 +47,7 @@ are the authoritative statement of intent and acceptance criteria and MUST be lo
 
 | Framework | Detection markers | Artifacts to load |
 | --------- | ----------------- | ----------------- |
-| OpenSpec | `openspec/` directory containing `project.md` | `openspec/project.md` and the active change under `openspec/changes/<id>/` (`proposal.md`, `tasks.md`, `design.md`, spec deltas) |
+| OpenSpec | `openspec/` directory containing `config.yaml` | `openspec/config.yaml` for project context and rules, plus the active change under `openspec/changes/<id>/` (`proposal.md`, `tasks.md`, `design.md`, spec deltas in `specs/<name>/`). Active changes live directly under `openspec/changes/`; archived ones move to `openspec/changes/archive/` — pick an active one, not an archived one. |
 | Spec Kit | `.specify/` directory | `.specify/memory/constitution.md` and the active feature under `specs/<NNN-name>/` (`spec.md`, `plan.md`, `tasks.md`) |
 
 Identify the *active* artifact (change / feature) from the branch name, recent commits, the PR
@@ -82,7 +82,7 @@ If nothing is identifiable, ask the user instead of guessing.
 
 | Target | How to obtain it |
 | ------ | ---------------- |
-| Uncommitted work | `git diff` and `git diff --staged` |
+| Uncommitted work | `git diff` for unstaged changes, `git diff --cached` for staged changes, and `git status --short` to identify untracked (net new) files. Diff output alone misses files that exist on disk but were never `git add`ed, so a newly created implementation file would be invisible to the review; after collecting status, read every untracked file listed there so the reviewer sees the full surface of the change. |
 | A branch | `git diff <base>...HEAD` — three-dot, against the merge base, so commits landed on the base branch since do not appear as part of the change |
 | A pull request | `gh pr view <n> --json author,body,comments,commits,reviews,title,url` for metadata and top-level discussion; `gh api repos/{owner}/{repo}/pulls/<n>/comments` for inline review comments (`{owner}`/`{repo}` are expanded by `gh` from the current repo remote — use literal `owner/repo` if not in a repo context); `gh pr diff <n>` for the change |
 
@@ -98,11 +98,16 @@ session's own work, nor to work that has yet to be submitted. When the author is
   Restating another reviewer's point as a fresh discovery is noise. Pass a concise "known prior
   findings" block to each reviewer so they do not spend their pass rediscovering already-raised
   issues.
-- The branch may not be checked out. `gh pr diff` covers the diff, but reviewers needing
-  surrounding context must read files from the PR head without disturbing the current worktree
-  when possible: fetch the PR head ref and inspect files with `git show <ref>:<path>`, or use a
-  temporary worktree with explicit user consent. If neither is possible, state plainly in the
-  verdict which context could not be inspected.
+- The branch may not be checked out. `gh pr diff` covers the diff, but the diff alone is not
+  enough for an adversarial review — reviewers need the full file contents the diff sits inside,
+  not just the changed lines, because most real findings (broken control flow, wrong assumptions
+  about neighboring code, mismatched conventions) live in the surrounding context. Fetch the PR
+  head ref and inspect files with `git show <ref>:<path>`, or use a temporary worktree with
+  explicit user consent. If neither is possible — no network, no `gh` access, no permission to
+  add a worktree — the review is incomplete; do not present a final verdict. Instead render the
+  verdict with `Verdict: INCOMPLETE — <reason>` and a `## Context Limitations` section listing
+  every file or area that could not be inspected, so a reader knows the verdict does not cover
+  the whole change.
 
 ### Intent
 
@@ -207,7 +212,7 @@ Challenge necessity and complexity. Ask:
 <what the author is trying to achieve>
 <source: spec artifact / PR description + issue / reconstructed from the diff>
 
-## Verdict: PASS | CONTESTED | REJECT
+## Verdict: PASS | CONTESTED | REJECT | INCOMPLETE — <reason>
 <one-line summary>
 
 ## Findings
@@ -221,6 +226,10 @@ For each finding:
 ## What Went Well
 <1-3 things the reviewers found no issue with — acknowledge good work>
 
+## Context Limitations
+<only when Verdict is INCOMPLETE: list every file or area that could not be inspected, and why.
+Omit this section entirely for a complete review.>
+
 ## Lead Judgment
 <for each finding: accept, reject, or uncertain with a one-line rationale>
 ```
@@ -232,3 +241,8 @@ Verdict logic (findings marked uncertain by the Lead Judgment that are not high-
 - **CONTESTED** — at least one uncertain high-severity finding, or accepted medium-severity
   findings without accepted high-severity findings
 - **REJECT** — at least one accepted high-severity finding
+- **INCOMPLETE — `<reason>`** — full file context could not be obtained (see Context Limitations);
+  the verdict is not final and the user must supply the missing context, or grant permission to
+  fetch the PR head / create a worktree, before a real verdict can be rendered. INCOMPLETE does
+  *not* mean PASS — findings from the partial review still stand, but untested areas are
+  unjudged, not judged-clean.
