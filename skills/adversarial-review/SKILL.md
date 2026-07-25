@@ -1,6 +1,6 @@
 ---
 name: adversarial-review
-description: Adversarial code review that spawns independent reviewers to challenge a change from distinct critical lenses (Skeptic, Architect, Minimalist) and synthesizes a single verdict with findings and a lead judgment. Works on uncommitted work, a branch diff, or an open pull request written by someone else. Read-only — it never modifies code and never posts review comments. Use when the user asks for an "adversarial review", a "hostile review", to "challenge this diff/plan", or to stress-test a change or PR.
+description: Adversarial code review that spawns independent reviewers to challenge a change from distinct critical lenses (Skeptic, Architect, Minimalist) and synthesizes a single verdict with findings and a lead judgment. Works on uncommitted work, a branch diff, or a pull request — whether the current session's own or another author's. Read-only — it never modifies code and never posts review comments. Use when the user asks for an "adversarial review", a "hostile review", to "challenge this diff/plan", or to stress-test a change or PR.
 argument-hint: "[what to review — diff, branch, or PR number]"
 license: Apache-2.0
 metadata:
@@ -84,7 +84,7 @@ If nothing is identifiable, ask the user instead of guessing.
 | ------ | ---------------- |
 | Uncommitted work | `git diff` and `git diff --staged` |
 | A branch | `git diff <base>...HEAD` — three-dot, against the merge base, so commits landed on the base branch since do not appear as part of the change |
-| A pull request | `gh pr view <n> --json author,body,comments,commits,reviews,title,url` for metadata and top-level discussion; `gh api repos/:owner/:repo/pulls/<n>/comments` for inline review comments; `gh pr diff <n>` for the change |
+| A pull request | `gh pr view <n> --json author,body,comments,commits,reviews,title,url` for metadata and top-level discussion; `gh api repos/{owner}/{repo}/pulls/<n>/comments` for inline review comments (`{owner}`/`{repo}` are expanded by `gh` from the current repo remote — use literal `owner/repo` if not in a repo context); `gh pr diff <n>` for the change |
 
 ### Reviewing someone else's pull request
 
@@ -120,13 +120,13 @@ authority:
    prompts and in the verdict, so a reader can tell which findings rest on a stated requirement
    and which rest on an inference.
 
-Assess change size:
+Assess change size. Classify by the **highest tier any single dimension reaches** — e.g. a 100-line, 1-file change is Medium (lines trigger Medium, files only trigger Small, take the higher):
 
 | Size | Threshold | Reviewers |
 | ---- | --------- | --------- |
-| Small | < 50 lines, 1-2 files | 1 (Skeptic) |
-| Medium | 50-200 lines, 3-5 files | 2 (Skeptic + Architect) |
-| Large | 200+ lines or 5+ files | 3 (Skeptic + Architect + Minimalist) |
+| Small | < 50 lines **and** 1-2 files | 1 (Skeptic) |
+| Medium | 50-200 lines **or** 3-5 files | 2 (Skeptic + Architect) |
+| Large | 200+ lines **or** 5+ files | 3 (Skeptic + Architect + Minimalist) |
 
 ## Step 3 — Spawn Reviewers
 
@@ -225,7 +225,7 @@ For each finding:
 <for each finding: accept, reject, or uncertain with a one-line rationale>
 ```
 
-Verdict logic:
+Verdict logic (findings marked uncertain by the Lead Judgment that are not high-severity are treated as effectively accepted-low: they appear in the Lead Judgment but do not push toward CONTESTED):
 
 - **PASS** — no accepted medium- or high-severity findings, and no uncertain high-severity
   findings
