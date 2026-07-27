@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/looztra/agent-utility-belt/compare/v0.3.0...v0.4.0) (2026-07-27)
+
+
+### Features
+
+* **skills:** add adversarial-review skill ([#24](https://github.com/looztra/agent-utility-belt/issues/24)) ([d0dbfbd](https://github.com/looztra/agent-utility-belt/commit/d0dbfbdd0cf80f754ea501c97720b0122c9ee4ae))
+
 ## [0.3.0](https://github.com/looztra/agent-utility-belt/compare/v0.2.0...v0.3.0) (2026-07-22)
 
 
