@@ -148,7 +148,10 @@ reviewer gets a single self-contained prompt containing:
 5. The code or diff to review (or precise instructions to read it)
 6. These instructions, verbatim: "You are an adversarial reviewer. Your job is to find real
    problems, not validate the work. Be specific — cite files, lines, and concrete failure
-   scenarios. Rate each finding: high (blocks ship), medium (should fix), low (worth noting).
+   scenarios. Restating what the diff does is not a finding — say what is wrong with it. Missing
+   test coverage for new or changed behavior is itself a finding, not something to pass over. Do
+   not hedge — if something is a problem, say so directly instead of softening it with 'might' or
+   'possibly'. Rate each finding: high (blocks ship), medium (should fix), low (worth noting).
    Return your findings as a numbered markdown list."
 
 If a reviewer fails or returns nothing, note the failure in the verdict — do not silently
@@ -157,8 +160,11 @@ skip a lens.
 ## Step 4 — Synthesize Verdict
 
 Read each reviewer's findings. Deduplicate overlapping findings, keeping the highest severity
-and crediting every lens that raised it. Do not treat lack of overlap as evidence that a finding
-is weak: each reviewer used a different lens, so a valid issue may appear in only one review.
+and crediting every lens that raised it. A finding independently raised by 2+ lenses is promoted
+one severity level (low -> medium, medium -> high) — convergence from distinct critical lenses is
+stronger evidence than any single lens's reading. Do not treat lack of overlap as evidence that a
+finding is weak: each reviewer used a different lens, so a valid issue may appear in only one
+review.
 
 ## Step 5 — Render Judgment
 
@@ -184,7 +190,11 @@ Challenge correctness and completeness. Ask:
 - What error paths are unhandled or silently swallowed?
 - What race conditions or ordering dependencies exist?
 - What does the author believe is true that isn't proven?
-- Where is "it works on my machine" masquerading as verification?
+- Where does user- or externally-controlled input reach a query, command, template, file path, or
+  deserializer without validation or parameterization?
+- Are credentials, tokens, or secrets hardcoded, logged, or exposed in error messages?
+- Does new or changed behavior have a test that would fail without it, or is "it works on my
+  machine" standing in for real verification?
 
 ### Architect
 
@@ -192,8 +202,11 @@ Challenge structural fitness. Ask:
 
 - Does the design actually serve the stated goal, or does it serve a goal the author assumed?
 - Where are the coupling points that will hurt when requirements shift?
-- What boundary violations exist? Where does responsibility leak between components?
-- What implicit assumptions about scale, concurrency, or ordering will break first?
+- What boundary violations exist? Where does responsibility leak between components — including
+  trust boundaries, where a component now implicitly relies on another to have already validated
+  or authorized something?
+- If scale, concurrency, or ordering requirements changed, which component would have to be
+  redesigned — not just which line would break?
 
 ### Minimalist
 
