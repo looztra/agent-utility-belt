@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.5.0](https://github.com/looztra/agent-utility-belt/compare/v0.4.0...v0.5.0) (2026-08-06)
+
+
+### Features
+
+* **adversarial-review:** sharpen reviewer rigor and close lens gaps ([#32](https://github.com/looztra/agent-utility-belt/issues/32)) ([db65b51](https://github.com/looztra/agent-utility-belt/commit/db65b519dc741020bd15d703c39ae7fca0dd79ae))
+
 ## [0.4.0](https://github.com/looztra/agent-utility-belt/compare/v0.3.0...v0.4.0) (2026-07-27)
 
 
