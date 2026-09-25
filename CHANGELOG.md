@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.1](https://github.com/looztra/agent-utility-belt/compare/v0.5.0...v0.5.1) (2026-09-25)
+
+
+### Bug Fixes
+
+* **adversarial-review:** bind orchestrator to trust boundary, not just reviewers ([#67](https://github.com/looztra/agent-utility-belt/issues/67)) ([d83e152](https://github.com/looztra/agent-utility-belt/commit/d83e152c97dc42a1ef5ab11a53375a51daa90dcc))
+* **adversarial-review:** guard against prompt injection from PR/repo content ([#65](https://github.com/looztra/agent-utility-belt/issues/65)) ([8bed7bc](https://github.com/looztra/agent-utility-belt/commit/8bed7bc54155d6d264b61e376c181c730cb63306))
+
 ## [0.5.0](https://github.com/looztra/agent-utility-belt/compare/v0.4.0...v0.5.0) (2026-08-06)
 
 
