@@ -2,6 +2,9 @@
 name: document-architecture
 description: Analyze an existing application and create or update a concise, evidence-based Markdown architecture document set. Use this skill whenever the user asks for architecture documentation, application structure documentation, system design documentation, external-service inventory, endpoint/dependency diagrams, data-model documentation, or an architecture overview derived from a codebase. Inspect the current implementation first, preserve existing documentation, and clearly distinguish confirmed facts from unknowns.
 compatibility: Requires read access to the application source tree and permission to create or update Markdown files in the requested documentation directory.
+license: Apache-2.0
+metadata:
+  last-updated: 2026-10-17
 ---
 
 # Document application architecture
@@ -24,10 +27,12 @@ Before writing, determine which application(s) to document. A repository may con
 Resolve the output location in this order:
 
 1. A location the user specifies. Treat a user-provided path as repository-relative unless they explicitly provide an absolute path.
-2. Existing architecture documentation for the target application, found during investigation (for example `docs/architecture.md`, `docs/system-design.md`, or `handbook/architecture/`). Update it in place instead of creating a parallel set. If its layout differs from the five-file set below, ask the user whether to restructure it into that layout or update it in its current structure; do not silently leave a stale copy next to a new set.
+2. Existing architecture documentation for the target application, found during investigation (for example `docs/architecture.md`, `docs/system-design.md`, or `handbook/architecture/`). Update it in place instead of creating a parallel set. If its layout differs from the five-file set below, ask the user whether to restructure it or keep its current structure.
+   - Keep: update the existing files in place, covering the same content areas as the five-file set below; create no additional files.
+   - Restructure: create the five-file set in `docs/architecture/` (or `docs/architecture/<app-name>/`) unless the existing documentation is already a directory, in which case use that directory. Migrate the existing content into it, then delete the old file(s) and fix links that pointed to them, so no stale copy remains.
 3. `docs/architecture` (or `docs/architecture/<app-name>/` per application) when no existing architecture documentation is found.
 
-Create or update these files in the output directory:
+Unless the user chose to keep an existing structure (see step 2 above), create or update these files in the output directory:
 
 - `README.md`
 - `01-architecture-overview.md`
@@ -44,7 +49,7 @@ If the directory or files already exist, update them to reflect the current code
 3. Search for outbound integrations and infrastructure dependencies, including HTTP clients, SDKs, databases, caches, object storage, queues, Kafka topics, webhooks, identity providers, and observability services. Distinguish configured-but-unused services from services called by the code.
 4. Inventory HTTP endpoints and trace their meaningful dependencies. Include database reads/writes, outbound HTTP calls, Kafka ingestion/emission, queues, caches, and other observable side effects. If the application has no HTTP endpoints, state that explicitly.
 5. Identify persisted data models from ORM entities, schemas, migrations, repositories, serializers, and database configuration. Describe relationships only when supported by code or schema evidence.
-6. Update all five files as one coherent documentation set. Prefer concise sections and tables over repetition. Include source paths so readers can verify important claims.
+6. Write or update the documentation as one coherent set: all five files, unless the user chose to keep an existing structure, in which case update the existing files in place and cover the same content areas. Prefer concise sections and tables over repetition. Include source paths so readers can verify important claims.
 7. Check every Markdown file for valid fenced-code languages and required blank lines around headings and lists. Ensure Mermaid diagrams use fenced `mermaid` blocks and remain syntactically coherent.
 
 When evidence is incomplete, say `Unknown`, `Not found in the inspected source`, or equivalent and name what was inspected. Never invent endpoints, integrations, data fields, relationships, or runtime behavior. Avoid including secrets, tokens, credentials, or sensitive configuration values; document only service names, purposes, and safe configuration key names.
