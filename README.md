@@ -6,7 +6,7 @@ My agents' go-to belt.
 
 | Skill | Description |
 | --- | --- |
-| [adversarial-review](skills/adversarial-review/SKILL.md) | Run an adversarial, read-only review of a diff, branch, or PR using independent reviewer lenses and a synthesized verdict. |
+| [adversarial-review](skills/adversarial-review/SKILL.md) | Run an adversarial review of a diff, branch, or PR using independent reviewer lenses and a synthesized verdict, optionally posting the findings as a pending GitHub PR review. |
 | [commit-and-push](skills/commit-and-push/SKILL.md) | Safely review git changes, create one or more semantic commits with mandatory scopes, and push the current branch. |
 | [generate-pr](skills/generate-pr/SKILL.md) | Create or update a GitHub pull request from the current branch, with template-compliant descriptions and a GitHub CLI → GitHub MCP fallback. |
 | [pr-merge-loop](skills/pr-merge-loop/SKILL.md) | Work through every open PR oldest first, rebasing and auto-merging the approved ones, then report a summary table of what merged and why the rest did not. |
