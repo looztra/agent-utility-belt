@@ -8,9 +8,24 @@ compatibility: Requires read access to the application source tree and permissio
 
 Analyze the current application and document how it is actually organized and architected. The documentation must describe the implementation found in the repository, not an assumed or idealized design.
 
-## Output location
+## Scope and output location
 
-Use `docs/architecture` by default. If the user specifies another location, use that location instead. Treat a user-provided path as repository-relative unless they explicitly provide an absolute path.
+### Application scope
+
+Before writing, determine which application(s) to document. A repository may contain several independently runnable applications (for example a web app, a worker, and an SDK in a monorepo). Detect them from workspace manifests, per-directory build files, Dockerfiles, deployment definitions, and entry points.
+
+- If the user named a target application, document only that one.
+- If the repository contains a single application, document it.
+- If it contains several and the user did not name a target, ask the user whether to document one of them or all of them. Never merge separate applications into one document set.
+- When documenting several applications, produce one document set per application (for example `docs/architecture/<app-name>/`), and add a top-level `README.md` index linking to each set and summarizing how the applications interact.
+
+### Output location
+
+Resolve the output location in this order:
+
+1. A location the user specifies. Treat a user-provided path as repository-relative unless they explicitly provide an absolute path.
+2. Existing architecture documentation for the target application, found during investigation (for example `docs/architecture.md`, `docs/system-design.md`, or `handbook/architecture/`). Update it in place instead of creating a parallel set. If its layout differs from the five-file set below, ask the user whether to restructure it into that layout or update it in its current structure; do not silently leave a stale copy next to a new set.
+3. `docs/architecture` (or `docs/architecture/<app-name>/` per application) when no existing architecture documentation is found.
 
 Create or update these files in the output directory:
 
@@ -24,7 +39,7 @@ If the directory or files already exist, update them to reflect the current code
 
 ## Investigation workflow
 
-1. Inspect the repository structure, README files, build and dependency manifests, configuration, source directories, tests, migrations, schemas, infrastructure definitions, and existing architecture documentation.
+1. Inspect the repository structure, README files, build and dependency manifests, configuration, source directories, tests, migrations, schemas, infrastructure definitions, and existing architecture documentation. Resolve the application scope and output location (see above) before writing anything.
 2. Identify the application entry points, runtime components, module/package boundaries, primary control flow, persistence approach, asynchronous messaging, authentication boundaries, and core architectural principles. Cite concrete paths and symbols where useful.
 3. Search for outbound integrations and infrastructure dependencies, including HTTP clients, SDKs, databases, caches, object storage, queues, Kafka topics, webhooks, identity providers, and observability services. Distinguish configured-but-unused services from services called by the code.
 4. Inventory HTTP endpoints and trace their meaningful dependencies. Include database reads/writes, outbound HTTP calls, Kafka ingestion/emission, queues, caches, and other observable side effects. If the application has no HTTP endpoints, state that explicitly.
