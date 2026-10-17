@@ -1,6 +1,6 @@
 ---
 name: adversarial-review
-description: Adversarial code review that spawns independent reviewers to challenge a change from distinct critical lenses (Skeptic, Architect, Minimalist) and synthesizes a single verdict with findings and a lead judgment. Works on uncommitted work, a branch diff, or a pull request — whether the current session's own or another author's. Read-only — it never modifies code and never posts review comments. Use when the user asks for an "adversarial review", a "hostile review", to "challenge this diff/plan", or to stress-test a change or PR.
+description: Adversarial code review that spawns independent reviewers to challenge a change from distinct critical lenses (Skeptic, Architect, Minimalist) and synthesizes a single verdict with validated findings. Works on uncommitted work, a branch diff, or a pull request — whether the current session's own or another author's. Read-only — it never modifies code and never posts review comments. Use when the user asks for an "adversarial review", a "hostile review", to "challenge this diff/plan", or to stress-test a change or PR.
 argument-hint: "[what to review — diff, branch, or PR number]"
 license: Apache-2.0
 metadata:
@@ -203,16 +203,18 @@ stronger evidence than any single lens's reading. Do not treat lack of overlap a
 finding is weak: each reviewer used a different lens, so a valid issue may appear in only one
 review.
 
-## Step 5 — Render Judgment
+## Step 5 — Validate Findings and Render Verdict
 
 After synthesizing the reviewers, apply your own judgment before assigning the verdict. Using the
-stated intent and the project conventions as your frame, state which findings you would accept,
-reject, or mark uncertain — and why. Reviewers are adversarial by design; not every finding
-warrants action. Call out false positives, overreach, and findings that mistake style for
-substance.
+stated intent and the project conventions as your frame, mark each finding `valid` (a real
+problem), `invalid` (a false positive, overreach, or style mistaken for substance), or `unsure`
+(cannot be settled from the available evidence) — and say why. These statuses judge the
+*finding*, not the change under review; the decision on the change is the Verdict. Reviewers are
+adversarial by design; not every finding warrants action, so call out false positives, overreach,
+and findings that mistake style for substance.
 
-Assign the final verdict from the accepted and uncertain findings only, then append the Lead
-Judgment section. Rejected findings do not affect the verdict. Then stop — applying fixes is a
+Assign the final verdict from the `valid` and `unsure` findings only, then append the Finding
+Validation section. `invalid` findings do not affect the verdict. Then stop — applying fixes is a
 separate task the user must ask for.
 
 ## Reviewer Lenses
@@ -281,21 +283,23 @@ For each finding:
 <only when Verdict is INCOMPLETE: list every file or area that could not be inspected, and why.
 Omit this section entirely for a complete review.>
 
-## Lead Judgment
-<for each finding: accept, reject, or uncertain with a one-line rationale>
+## Finding Validation
+<for each finding: valid, invalid, or unsure with a one-line rationale. These statuses judge
+whether the finding is a real problem — not whether the change should be accepted; that is the
+Verdict.>
 ```
 
-Verdict logic (findings marked uncertain by the Lead Judgment that are not high-severity are treated as effectively accepted-low: they appear in the Lead Judgment but do not push toward REQUEST CHANGES):
+Verdict logic (findings marked `unsure` in Finding Validation that are not high-severity are treated as effectively `valid` low: they appear in Finding Validation but do not push toward REQUEST CHANGES):
 
-- **APPROVE** — no accepted medium- or high-severity findings, and no uncertain high-severity
+- **APPROVE** — no `valid` medium- or high-severity findings, and no `unsure` high-severity
   findings. Mirrors GitHub's "Approve" review state.
-- **REQUEST CHANGES — `<reason>`** — at least one accepted high-severity finding, at least one
-  uncertain high-severity finding, or accepted medium-severity findings. Mirrors GitHub's
+- **REQUEST CHANGES — `<reason>`** — at least one `valid` high-severity finding, at least one
+  `unsure` high-severity finding, or `valid` medium-severity findings. Mirrors GitHub's
   "Request changes" review state. Always add a `Basis:` line stating why; when several apply,
   report the strongest in this order:
-  - `confirmed blocker` — at least one accepted high-severity finding
-  - `unresolved doubt` — at least one uncertain high-severity finding, and no accepted high
-  - `should-fix` — accepted medium-severity findings only
+  - `confirmed blocker` — at least one `valid` high-severity finding
+  - `unresolved doubt` — at least one `unsure` high-severity finding, and no `valid` high
+  - `should-fix` — `valid` medium-severity findings only
 - **INCOMPLETE — `<reason>`** — full file context could not be obtained (see Context Limitations);
   the verdict is not final and the user must supply the missing context, or grant permission to
   fetch the PR head / create a worktree, before a real verdict can be rendered. INCOMPLETE does
