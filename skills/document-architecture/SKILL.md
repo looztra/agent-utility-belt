@@ -1,7 +1,6 @@
 ---
 name: document-architecture
 description: Analyze an existing application and create or update a concise, evidence-based Markdown architecture document set. Use this skill whenever the user asks for architecture documentation, application structure documentation, system design documentation, external-service inventory, endpoint/dependency diagrams, data-model documentation, or an architecture overview derived from a codebase. Inspect the current implementation first, preserve existing documentation, and clearly distinguish confirmed facts from unknowns.
-compatibility: Requires read access to the application source tree and permission to create or update Markdown files in the requested documentation directory.
 license: Apache-2.0
 metadata:
   last-updated: 2026-10-17
@@ -19,20 +18,27 @@ Before writing, determine which application(s) to document. A repository may con
 
 - If the user named a target application, document only that one.
 - If the repository contains a single application, document it.
-- If it contains several and the user did not name a target, ask the user whether to document one of them or all of them. Never merge separate applications into one document set.
-- When documenting several applications, produce one document set per application (for example `docs/architecture/<app-name>/`), and add a top-level `README.md` index linking to each set and summarizing how the applications interact.
+- If it contains several and the user did not name a target, ask the user whether to document one of them or all of them.
+- Never merge separate applications into one description. Each application gets its own document set; an existing document that already covers several applications may be kept only if each application stays in its own clearly separated section.
 
 ### Output location
 
-Resolve the output location in this order:
+Resolve the base directory in this order:
 
 1. A location the user specifies. Treat a user-provided path as repository-relative unless they explicitly provide an absolute path.
-2. Existing architecture documentation for the target application, found during investigation (for example `docs/architecture.md`, `docs/system-design.md`, or `handbook/architecture/`). Update it in place instead of creating a parallel set. If its layout differs from the five-file set below, ask the user whether to restructure it or keep its current structure.
-   - Keep: update the existing files in place, covering the same content areas as the five-file set below; create no additional files.
-   - Restructure: create the five-file set in `docs/architecture/` (or `docs/architecture/<app-name>/`) unless the existing documentation is already a directory, in which case use that directory. Migrate the existing content into it, then delete the old file(s) and fix links that pointed to them, so no stale copy remains.
-3. `docs/architecture` (or `docs/architecture/<app-name>/` per application) when no existing architecture documentation is found.
+2. The location of existing architecture documentation for the target application(s), found during investigation (for example `docs/architecture.md`, `docs/system-design.md`, or `handbook/architecture/`). For an existing directory, use that directory; for an existing single file, use `docs/architecture/`.
+3. `docs/architecture/` when no existing architecture documentation is found.
 
-Unless the user chose to keep an existing structure (see step 2 above), create or update these files in the output directory:
+When documenting a single application in a single-application repository, write the document set directly in the base directory. Otherwise write each application's set in `<base>/<app-name>/`, and create or update a `<base>/README.md` index linking to each set and summarizing how the applications interact. Never write two applications' sets into the same directory.
+
+### Existing documentation
+
+Always look for existing architecture documentation, including at a user-specified location, before writing. Update it rather than creating a parallel set. If its layout differs from the five-file set below, ask the user whether to keep its current structure or restructure it:
+
+- Keep: update the existing files in place, covering the same content areas as the five-file set below, and touch only the sections about the target application(s). Do not create extra files for applications the existing files already cover. For a target application the existing files do not cover, create its five-file set in `<base>/<app-name>/` and link it from the index.
+- Restructure: create the five-file set(s) in the location resolved above and migrate the relevant content into them. If an old file covers only target applications, delete it once all its content is migrated. If it also covers applications that are not being documented now, remove only the migrated sections and leave a short pointer to the new set, keeping the other applications' content intact.
+
+Unless the user chose to keep an existing structure, create or update these files in each application's output directory:
 
 - `README.md`
 - `01-architecture-overview.md`
@@ -40,7 +46,9 @@ Unless the user chose to keep an existing structure (see step 2 above), create o
 - `03-endpoints-and-dependencies.md`
 - `04-data-models.md`
 
-If the directory or files already exist, update them to reflect the current code. Preserve useful existing content and add or revise sections rather than deleting documentation wholesale. Remove or correct statements only when repository evidence shows they are obsolete. Do not modify unrelated documentation.
+If the directory or files already exist, update them to reflect the current code. Preserve useful existing content and add or revise sections rather than deleting documentation wholesale. Remove or correct statements only when repository evidence shows they are obsolete.
+
+Do not modify documentation outside the architecture document set, with one exception: when you move or delete a file, update links elsewhere in the repository that point to it so none are left broken.
 
 ## Investigation workflow
 
@@ -50,7 +58,7 @@ If the directory or files already exist, update them to reflect the current code
 4. Inventory HTTP endpoints and trace their meaningful dependencies. Include database reads/writes, outbound HTTP calls, Kafka ingestion/emission, queues, caches, and other observable side effects. If the application has no HTTP endpoints, state that explicitly.
 5. Identify persisted data models from ORM entities, schemas, migrations, repositories, serializers, and database configuration. Describe relationships only when supported by code or schema evidence.
 6. Write or update the documentation as one coherent set: all five files, unless the user chose to keep an existing structure, in which case update the existing files in place and cover the same content areas. Prefer concise sections and tables over repetition. Include source paths so readers can verify important claims.
-7. Check every Markdown file for valid fenced-code languages and required blank lines around headings and lists. Ensure Mermaid diagrams use fenced `mermaid` blocks and remain syntactically coherent.
+7. Check every generated or updated file against the Markdown quality rules below.
 
 When evidence is incomplete, say `Unknown`, `Not found in the inspected source`, or equivalent and name what was inspected. Never invent endpoints, integrations, data fields, relationships, or runtime behavior. Avoid including secrets, tokens, credentials, or sensitive configuration values; document only service names, purposes, and safe configuration key names.
 
@@ -85,7 +93,7 @@ Document available HTTP endpoints, grouped by component or resource when useful.
 
 ### `04-data-models.md`
 
-Describe persisted data models and associated request, response, event, or domain models where relevant. Include fields and their meaning only when supported by schemas or code, relationships, identifiers, lifecycle constraints, and source paths. Add a Mermaid `erDiagram` when relationships are applicable; otherwise explain why it is omitted. Separate database-persisted models from transient/API models.
+Describe persisted data models and associated request, response, event, or domain models where relevant. Include fields and their meaning only when supported by schemas or code, relationships, identifiers, lifecycle constraints, and source paths. Add a Mermaid `erDiagram` when relationships are applicable; otherwise explain why it is omitted. Separate database-persisted models from transient/API models. If the application persists no data, state that explicitly and document only the transient models that matter to its interfaces.
 
 ## Markdown quality rules
 
