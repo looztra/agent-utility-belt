@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/looztra/agent-utility-belt/compare/v0.5.1...v0.6.0) (2026-10-23)
+
+
+### Features
+
+* **skills:** add document-architecture skill ([#99](https://github.com/looztra/agent-utility-belt/issues/99)) ([3aceaaa](https://github.com/looztra/agent-utility-belt/commit/3aceaaae7bafdd217c2100a5f43b5994a1344099))
+
 ## [0.5.1](https://github.com/looztra/agent-utility-belt/compare/v0.5.0...v0.5.1) (2026-10-17)
 
 
