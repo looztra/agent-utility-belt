@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.1](https://github.com/looztra/agent-utility-belt/compare/v0.6.0...v0.6.1) (2026-11-11)
+
+
+### Bug Fixes
+
+* **skills:** require adversarial-review verdict display before posting menu ([#127](https://github.com/looztra/agent-utility-belt/issues/127)) ([4620143](https://github.com/looztra/agent-utility-belt/commit/4620143f677127804932ad5a9dcd4661dec60dbf))
+
 ## [0.6.0](https://github.com/looztra/agent-utility-belt/compare/v0.5.1...v0.6.0) (2026-11-06)
 
 
