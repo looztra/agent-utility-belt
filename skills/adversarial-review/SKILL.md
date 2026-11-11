@@ -4,15 +4,16 @@ description: Adversarial code review that spawns independent reviewers to challe
 argument-hint: "[what to review — diff, branch, or PR number]"
 license: Apache-2.0
 metadata:
-  last-updated: 2026-10-17
+  last-updated: 2026-11-11
 ---
 
 # Adversarial Review
 
 Spawn independent reviewers to challenge work from distinct critical lenses. The deliverable is
-a synthesized verdict reported back to the user — do **NOT** make changes to the code under
-review, and do **NOT** post findings as PR review comments unless the user chooses to in Step 6
-or explicitly asks — and any posting, however requested, follows Step 6's posting rules.
+a synthesized verdict displayed in full to the user in the chat (Step 5) — do **NOT** make
+changes to the code under review, and do **NOT** post findings as PR review comments unless the
+user chooses to in Step 6 or explicitly asks — and any posting, however requested, follows Step
+6's posting rules.
 
 The work under review may be the current session's own, or a pull request opened by someone
 else. Both are in scope.
@@ -218,8 +219,19 @@ adversarial by design; not every finding warrants action, so call out false posi
 and findings that mistake style for substance.
 
 Assign the final verdict from the `valid` and `unsure` findings only, then append the Finding
-Validation section. `invalid` findings do not affect the verdict. Then go to Step 6 if it
-applies; otherwise stop — applying fixes is a separate task the user must ask for.
+Validation section. `invalid` findings do not affect the verdict.
+
+**Display the verdict.** Print the complete verdict to the user as chat text, following the
+Verdict Format below: every section, and every finding with its number, severity, `file:line`,
+lens, and recommendation, plus the Finding Validation. This is the deliverable and it is
+mandatory, whether or not Step 6 follows:
+
+- Write it as regular response text. A tool-call argument, a file, a subagent result, or your
+  own reasoning does not count as shown.
+- Do not shrink it to a count or a summary ("5 findings, 2 high") because a menu comes next.
+
+Then go to Step 6 if it applies; otherwise stop — applying fixes is a separate task the user
+must ask for.
 
 ## Step 6 — Offer Next Action
 
@@ -234,7 +246,16 @@ and apply the posting rules with a plain-text confirmation; for `INCOMPLETE`, po
 the user acknowledges the review is partial, and say so in the review body. A non-PR target
 cannot be posted.
 
-Present the choice through the runtime's interactive menu tool, not as printed text:
+**Findings first.** The menu is never the first place the user sees the findings. Before
+invoking the menu tool, check that your visible output already contains the `## Verdict:` line
+and the full numbered `## Findings` list from Step 5; if it does not, print the verdict now. The
+verdict text comes before the menu tool call — in the same message or an earlier one — never
+after it, and never only inside it.
+
+Present the choice itself through the runtime's interactive menu tool, not as printed text. Make
+the menu question self-contained: recap the postable findings one per line (`#<n> [severity]
+<short title>`, numbers matching the verdict), so the choice stays informed even if the menu UI
+hides earlier output.
 
 | Choice | Behavior |
 | ------ | -------- |
